@@ -16,32 +16,46 @@ def sigmoid(x, derive=False): # x is the input, derive is do derivative or not
                            # depends on how you call the function
     return ( 1.0 / (1.0 + np.exp(-x)) )
 
-# define the XOR data set
+# data set
 X = np.array([
-    [1, 1, 1],  # data point (x,y) = (1,1), with homogenization (i.e., 1 for bias)
-    [1, 0, 1],  # data point (1,0)
-    [0, 1, 1],  # data point (0,1)
-    [0, 0, 1],  # data point (0,0)
+    [0,0,0],
+    [0,0,1],
+    [0,1,0],
+    [0,1,1],
+    [1,0,0],
+    [1,0,1],
+    [1,1,0],
+    [1,1,1]
 ]) 
 
 # labels
-y = np.array([[0], 
-              [1], 
-              [1],
-              [0]
+y = np.array([[1,0], 
+              [0,1], 
+              [0,1],
+              [1,0],
+              [0,1],
+              [1,0],
+              [1,0],
+              [1,0]
              ])
 
 # weights with random numbers
-n1_w = np.random.normal(0,2,(3, 1))
-n2_w = np.random.normal(0,2,(3, 1))
-n3_w = np.random.normal(0,2,(3, 1))
+h1_n1_w  = [.1,.2,.3, .2]
+h1_n2_w  = [.1,.1,.1, .1]
+h1_n3_w  = [.3,.3,.3, .9]
+h2_n1_w  = [ 0, 0, 0,  0]
+h2_n2_w  = [.1,.1,.1, .2]
+h2_n3_w  = [.1,.1,.1,  0]
+h2_n4_w  = [.2,.2,.2,-.1]
+out_n1_w = [1.5,1.2, 1,0,-.2]
+out_n2_w = [  0, .8,.1,0,-.1]
 
-print('hidden layer 1, neuron 1 weights')
-print(n1_w)
-print('hidden layer 1, neuron 2 weights')
-print(n2_w)
-print('hidden layer 2, neuron 1 weights')
-print(n3_w)
+# print('hidden layer 1, neuron 1 weights')
+# print(n1_w)
+# print('hidden layer 1, neuron 2 weights')
+# print(n2_w)
+# print('hidden layer 2, neuron 1 weights')
+# print(n3_w)
 
 ###############################################
 # Epochs
@@ -49,10 +63,10 @@ print(n3_w)
 eta = 3.0 # learning rate
 err_break = 0.001 # stop when below this error
 max_epoch = 20000 # how many epochs? (each epoch will run through all 4 data points)
-err = np.zeros((epoch,1)) # lets record error to plot (get a convergence plot)
+err = np.zeros((max_epoch,1)) # lets record error to plot (get a convergence plot)
 end_index = max_epoch-1 # what index did we stop on?
 inds = np.asarray([0,1,2,3]) # array of our 4 indices (data point index references)
-for k in range(epoch): 
+for k in range(max_epoch): 
     
     # init error
     err[k] = 0    
