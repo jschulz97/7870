@@ -7,7 +7,7 @@ from IPython.display import display
 from IPython.display import clear_output
 import sys
 import random
-from torchvision import pytorch
+import torch.nn as nn
 
 # our nonlinear Sigmoid function (including its derivative)
 #  note: I let a=1 in the Sigmoid
@@ -62,3 +62,6 @@ out_weights =   np.array([[1.5, 1.2,  1, 0],
 
 out_bias    =   np.array([-.2, -.1])
 
+model = nn.Sigmoid()
+
+model()
