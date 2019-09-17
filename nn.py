@@ -62,84 +62,71 @@ out_weights =   np.array([[1.5, 1.2,  1, 0],
 out_bias    =   np.array([-.2, -.1])
 
 
-# print('hidden layer 1, neuron 1 weights')
-# print(n1_w)
-# print('hidden layer 1, neuron 2 weights')
-# print(n2_w)
-# print('hidden layer 2, neuron 1 weights')
-# print(n3_w)
-
 ###############################################
 # Epochs
 ###############################################
-eta = 5.0 # learning rate
+eta = 5 # learning rate
 err_break = 0.001 # stop when below this error
-max_epoch = 10 # how many epochs? (each epoch will run through all 4 data points)
+max_epoch = 1 # how many epochs? (each epoch will run through all 4 data points)
 err = np.zeros((max_epoch,1)) # lets record error to plot (get a convergence plot)
 
 for k in range(max_epoch): 
     
     # init error
     err[k] = 0    
-    
-    # random shuffle of data each epoch?
-    #inds = np.random.permutation(inds)
-            
+
+
     # forward pass
     # layer 1
-    v1 = np.dot(X, np.transpose(h1_weights)) + h1_bias # h1
+    v1 = np.dot(X, np.transpose(h1_weights)) + h1_bias.T # h1
     v1 = sigmoid(v1)
     # v1 is (8,3)  
 
     # layer 2
-    v2 = np.dot(v1, np.transpose(h2_weights)) + h2_bias # h2
+    v2 = np.dot(v1, np.transpose(h2_weights)) + h2_bias.T # h2
     v2 = sigmoid(v2)
     # v2 is (8,4) 
 
     # output layer
-    oo = np.dot(v2, np.transpose(out_weights)) + out_bias # out
+    oo = np.dot(v2, np.transpose(out_weights)) + out_bias.T # out
     o  = sigmoid(oo) # hey, result of our net!!!
     # o is (8,2)
     
     # error
-    err[k] = np.sum(((1.0/2.0) * np.power((y - o), 2.0)))
-            
+    err[k] = np.sum(((1.0/2.0) * np.power((y - o), 2.0))) / 8
+
+
     # backprop time folks!!!
-    
-    # output layer, our delta is (delta_1 * delta_2)
-    delta_1 = (-1.0) * (y - o) #(8,2)
-    delta_2 = sigmoid(o,derive=True) # note how I called it, I passed o=sigmoid(oo) # (8,2)
-    
-    # now, lets prop it back to the weights
-    #delta_ow = np.ones((8, 3, 1))
-    
-    # format is
-    #  delta_index  =         input to final neuron    . (Err derivative * Sigmoid derivative)
-    #(4,2)          =         (8,4)T                   . (8,2)      
-    delta_ow        = np.dot( np.transpose(v2)         , (delta_1        * delta_2)                   )
+    # output layer
+    #(8,2)
+    delta_ow = (-1.0) * (y - o) * sigmoid(o,derive=True)
 
     # Layer 2
-    delta_4 = sigmoid(v2,derive=True) #(8,4)
-    #error_l =         input            this Sig der        error from output         weight to output neuron
-    #(4,3)   =        [(8,4)          * (8,4)]T     .    [ (8,2)          .           (4,2)T           ]
-    #delta_h2 = np.dot(np.transpose(v1 * delta_4) , np.dot(delta_1*delta_2 , np.transpose(out_weights)) )
-    delta_h2 = np.dot(np.transpose(delta_4) , np.dot(delta_1*delta_2 , np.transpose(out_weights)) )
-    
-    #(4,3)      (8,4)                     (8,2)     (4,2)T
-    delta_h2 = sigmoid(v2,derive=True) * delta_1*delta_2 . np.transpose(out_weights)
+    #(8,4)             (8,2)      (2,4)           (8,4)
+    delta_h2 = np.dot(delta_ow , out_weights) * sigmoid(v2)
+    delta_h2bias = np.dot(delta_ow , out_weights) * sigmoid(v2)
     
     # Layer 1
-    delta_3 = sigmoid(v1,derive=True) #(8,3)
-    #error_l =         input           this Sig der       error from output          weight to output neuron
-    #(3,3)   =        [(8,3)         * (8,3)]T     .    [ (8,4)          .           (3,4)T           ]
-    #delta_h1 = np.dot(np.transpose(X * delta_3) , np.dot(delta_4         , np.transpose(h2_weights)) )
-    delta_h1 = np.dot(np.transpose(delta_3) , np.dot(delta_4         , np.transpose(h2_weights)) )
+    #(8,3)             (8,4)      (4,3)           (8,3)
+    delta_h1 = np.dot(delta_h2 , h2_weights) * sigmoid(v1)
+    delta_h1bias = np.dot(delta_h2 , h2_weights) * sigmoid(v1)
 
     # update rule
-    h1_weights  = h1_weights  - eta * delta_h1 #hidden layer 1
-    h2_weights  = h2_weights  - eta * delta_h2 #hidden layer 2
-    out_weights = out_weights - eta * delta_ow #output layer
+    h1_weights  = h1_weights  - np.transpose( eta * np.dot(np.transpose(X) , delta_h1) ) #hidden layer 1
+    h1_bias     = h1_bias - np.transpose( eta * np.dot(np.ones((1,8)) , delta_h1bias) )
+    h2_weights  = h2_weights  - np.transpose( eta * np.dot(np.transpose(v1) , delta_h2) ) #hidden layer 2
+    h2_bias     = h2_bias - np.transpose( eta * np.dot(np.ones((1,8)) , delta_h2bias) )
+    out_weights = out_weights - np.transpose( eta * v2.T.dot( delta_ow ) ) #output layer
     
+
+print("\n\nHidden Layer 1 Weights:\n\n",h1_weights)
+print("\n\nHidden Layer 1 Biases:\n\n",h1_bias)
+
+print("\n\nHidden Layer 2 Weights:\n\n",h2_weights)
+print("\n\nHidden Layer 2 Biases:\n\n",h2_bias)
+
+print("\n\nOutput Weights:\n\n",out_weights)
+print("\n\nOutput Biases:\n\n",out_bias)
 
 # plot it        
 plt.plot(err)
