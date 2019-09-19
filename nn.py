@@ -68,11 +68,11 @@ out_weights =   np.array([[1.5, 1.2,  1, 0],
                           [  0,  .8, .1, 0]
                           ])
 
-out_bias    =   np.array([-.2, -.1])
+out_bias    =   np.array([[-.2], [-.1]])
 
 
-do_plot     = False
-eta         = .01   # learning rate
+do_plot     = True
+eta         = .01    # learning rate
 max_epoch   = 1     # how many epochs? (each epoch will run through all 4 data points)
 err         = np.zeros((max_epoch,1))   # lets record error to plot (get a convergence plot)
 
@@ -106,24 +106,24 @@ for k in range(max_epoch):
 
     ## backprop
     # output layer -- (8,2)
-    delta_ow = (-1.0) * (y - o) * tanh(o,derive=True)
+    #delta_ow = (-1.0) * (y - o) * tanh(o,derive=True)
+    delta_ow     = (-1.0) * (y - o)
 
     # Layer 2
     #(8,4)             (8,2)      (2,4)           (8,4)
-    delta_h2 = np.dot(delta_ow , out_weights) * tanh(v2)
-    delta_h2bias = np.dot(delta_ow , out_weights) * tanh(v2)
+    delta_h2     = np.dot(delta_ow , out_weights) * tanh(v2,derive=True)
     
     # Layer 1
     #(8,3)             (8,4)      (4,3)           (8,3)
-    delta_h1 = np.dot(delta_h2 , h2_weights) * tanh(v1)
-    delta_h1bias = np.dot(delta_h2 , h2_weights) * tanh(v1)
+    delta_h1     = np.dot(delta_h2 , h2_weights) * tanh(v1,derive=True)
 
     # update rule
     h1_weights  = h1_weights  - np.transpose( eta * np.dot(np.transpose(X) , delta_h1) ) #hidden layer 1
-    h1_bias     = h1_bias - np.transpose( eta * np.dot(np.ones((1,8)) , delta_h1bias) )
+    h1_bias     = h1_bias - np.transpose( eta * np.dot(np.ones((1,8)) , delta_h1) )
     h2_weights  = h2_weights  - np.transpose( eta * np.dot(np.transpose(v1) , delta_h2) ) #hidden layer 2
-    h2_bias     = h2_bias - np.transpose( eta * np.dot(np.ones((1,8)) , delta_h2bias) )
+    h2_bias     = h2_bias - np.transpose( eta * np.dot(np.ones((1,8)) , delta_h2) )
     out_weights = out_weights - np.transpose( eta * v2.T.dot( delta_ow ) ) #output layer
+    out_bias    = out_bias - np.transpose( eta * np.dot(np.ones((1,8)), delta_ow))
     
 
 print("\n\nHidden Layer 1 Weights:\n\n",h1_weights)
