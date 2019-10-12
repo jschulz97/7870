@@ -1,73 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-Hi class, here is what I got (you can run and verify below)
-
-layer 1 ########################
-
-n1_w1 (i.e., network layer 1, weight 1)
-[[0.08860685]
- [0.20195729]
- [0.29157565]
- [0.19372863]]
- 
-n1_w2 (i.e., network layer 1, weight 2)
-[[0.09033127]
- [0.1063255 ]
- [0.09675819]
- [0.10019741]]
- 
-n1_w3
-[[0.29310792]
- [0.30129798]
- [0.29182387]
- [0.89285427]]
- 
-layer 2 ########################
-
-n2_w1
-[[0.0419728 ]
- [0.01799462]
- [0.05814251]
- [0.0664807 ]]
- 
-n2_w2
-[[0.11446754]
- [0.10333934]
- [0.14187737]
- [0.25860662]]
- 
-n2_w3
-[[0.1264505 ]
- [0.11094494]
- [0.14033488]
- [0.0477684 ]]
- 
-n2_w4
-[[ 0.197662  ]
- [ 0.19885226]
- [ 0.19652186]
- [-0.10378586]]
- 
-layer 3 ########################
-
-n3_w1
-[[ 1.4551862 ]
- [ 1.20914277]
- [ 0.98307026]
- [ 0.01152043]
- [-0.15541029]]
- 
-n3_w2
-[[ 0.01368568]
- [ 0.79565676]
- [ 0.10254178]
- [-0.00790254]
- [-0.08804369]]
-# In[ ]:
-
-
-get_ipython().run_line_magic('matplotlib', 'inline')
-
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -78,12 +8,6 @@ from IPython.display import display
 from IPython.display import clear_output
 import sys
 import random
-
-
-# Lets set up that tanh function
-
-# In[ ]:
-
 
 # I kept this in so you can use it if you really really really want to!
 def sigmoid(x, derive=False):
@@ -98,28 +22,8 @@ def tanh(x, derive=False):
         return (1.0 - x*x)
     return ( (np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x)) )
 
-# lets plot our tanh fx on -2 to 2 in increments of 0.1
-
-test_neg_x = (-1.0) * np.arange(0.1,2.0,0.1) # negative numbers (start at 0.1, go to 2.0, in inc's of 0.1)
-test_neg_x = np.flip( test_neg_x ) # put them in the order we need to make an array tomorrow
-test_pos_x = np.arange(0,2.0,0.1) # now make the positive numbers
-test_x = np.append(test_neg_x,test_pos_x) # put the arrays together
-tanhres = tanh(test_x) # call our function on the array
-plt.plot(tanhres) # plot it!
-
-# now, look at what its deriv looks like
-
-tanhderiv = tanh(tanhres,derive=True)
-plt.plot(tanhderiv,'--r')
-plt.ylabel('tanh and its der')
-plt.legend(['tanh','tanh der'])
-plt.show()
-
 
 # some overall program parameters
-
-# In[ ]:
-
 
 # what function do we want to use? (tanh or sigmoid? point it to the function you want)
 MyNonLinearity = tanh # sigmoid
@@ -140,9 +44,6 @@ RandomlySamplePoints = 0
 
 
 # make our data set
-
-# In[ ]:
-
 
 # define the data set
 X = np.array([
@@ -168,9 +69,6 @@ y = np.array([[1, 0], # label, so (output 1 value, output 2 value)
 
 
 # init weights
-
-# In[ ]:
-
 
 RandomInitOrPreSeed = 2 # 1 means do random 
                         # 2 means use what I put online
@@ -243,9 +141,7 @@ print("n3_w2")
 print(n3_w2)
 
 
-# Lets run this algorithm already!
-
-# In[ ]:
+# Lets run this algorithm already
 
 
 err = np.zeros((epoch,1)) # lets record error to plot (get a convergence plot)
@@ -291,6 +187,12 @@ for k in range(epoch):
         if(IncludeNonLinOnOutput==1): # do we run a nonlinearity?...
             o1 = MyNonLinearity(oo1) 
             o2 = MyNonLinearity(oo2) 
+
+        print("\n\nActivations: "+str(i)+"\n\n")
+        print(v1)
+        print(v2)
+        print(o1,o2)
+        print("\n--------------------------\n")
         
         # overall error ########################
         
@@ -305,6 +207,7 @@ for k in range(epoch):
         if(IncludeNonLinOnOutput==1):
             delta_3_1 = delta_3_1 * MyNonLinearity(o1,derive=True)
             delta_3_2 = delta_3_2 * MyNonLinearity(o2,derive=True)
+       
         # what should the update be?
         delta_3_1_ow = np.ones((5, 1))
         for m in range(5):
@@ -328,15 +231,23 @@ for k in range(epoch):
                 delta_2_ow[m,n] = v1[m] * delta_2_store[n]
 
         # hidden layer 1 #######################
+        delta_1_store = np.ones((3,1)) # local errors, which we will need to remember/store!
         delta_1_ow = np.ones((4, 3)) # so ( (weight index), (neuron index) )
         for n in range(3): # loop over neurons in this layer
             # back error, now its 4 error terms
             delta_1 = (delta_2_store[0]*n2_w1[n]) + (delta_2_store[1]*n2_w2[n]) + (delta_2_store[2]*n2_w3[n]) + (delta_2_store[3]*n2_w4[n])
             # this error
             local_nonlin = MyNonLinearity(v1[n],derive=True)
+            delta_1_store[n] = delta_1 * local_nonlin
             # what is the delta update?
             for m in range(4):
                 delta_1_ow[m,n] = X[inx,m] * (delta_1 * local_nonlin)
+
+        print("\n\noutput deltas: "+str(i)+"\n\n")
+        print(delta_3_1,delta_3_2)
+        print(delta_2_store)
+        print(delta_1_store)
+        print("\n--------------------------\n")
                   
         # lets now update!!! ###################
                         
@@ -353,11 +264,13 @@ for k in range(epoch):
         n1_w2 = n1_w2 + ((-1)*eta) * np.reshape(delta_1_ow[:,1],[4,1])
         n1_w3 = n1_w3 + ((-1)*eta) * np.reshape(delta_1_ow[:,2],[4,1])
 
+        print("\n\nNew output weights: "+str(i)+"\n\n")
+        print(n3_w1,n3_w2)
+        
+        print("\n--------------------------\n")
+
 
 # Final weights
-
-# In[ ]:
-
 
 print("layer 1 ########################")
 
@@ -389,19 +302,13 @@ print(n3_w2)
 
 # Show results
 
-# In[ ]:
-
-
 # plot it        
 plt.plot(err)
 plt.ylabel('error')
-plt.show()
+#plt.show()
 
 
 # What do we get now value wise?
-
-# In[ ]:
-
 
 # what were the values (just do forward pass)  
 for i in range(8):  
