@@ -119,23 +119,22 @@ for k in range(max_epoch):
 
         print("\n\nActivations: "+str(i)+"\n\n")
         print(v1)
-        print(v2
+        print(v2)
         print(o)
         print("\n--------------------------\n")
 
         ## backprop
-        
         # Output layer
         #(1,2)                      (1,2)                     (1,2) 
         delta_ow     = (-1.0) * (np.reshape(y[i],((2,1))).T - o)
 
         # Layer 2
-        #(1,4)                (1,2)           (2,4)             (1,4)
-        delta_h2     = np.dot(delta_ow, out_weights[:,:4]) * tanh(v2[:,:4],derive=True)
+        #(1,4)                (1,2)           (2,5)             (1,5)
+        delta_h2     = np.dot(delta_ow, out_weights) * tanh(v2,derive=True)
          
         # Layer 1
         #(1,3)           (1,4)(w/o bias update) (4,4)           (1,4)
-        delta_h1     = np.dot(delta_h2[:,:3], h2_weights) * tanh(v1,derive=True)
+        delta_h1     = np.dot(delta_h2[:,:4], h2_weights) * tanh(v1,derive=True)
 
         print("\n\noutput deltas: "+str(i)+"\n\n")
         print(delta_ow)
@@ -144,17 +143,20 @@ for k in range(max_epoch):
         print("\n--------------------------\n")
 
         ## update rule
-        # Hidden layer 1
-        #(3,4)          (3,4)                      (3,1)       (1,4)
-        h1_weights  = h1_weights  - (eta * np.dot(delta_h1[:,:3].T , np.reshape(x,((1,4))))) 
+        # Output layer 
+        out_weights = np.ones((2,5))
+        for j in range(2):
+            out_weights[j] = v2 * delta_ow[0,j]
 
         # Hidden layer 2
-        #(4,4)        (4,4)                       (4,1)             (1,4)
-        h2_weights  = h2_weights - (eta * np.dot( delta_h2[:,:4].T , v1))
+        h2_weights = np.ones((4,4))
+        for j in range(4):
+            h2_weights[j] = v1 * delta_h2[0,j]
         
-        # Output layer 
-        #(2,5)        (2,5)                        (2,1)     (1,5)
-        out_weights = out_weights - (eta * np.dot( delta_ow.T , v2))
+        # Hidden layer 1
+        h1_weights = np.ones((3,4))
+        for j in range(3):
+            h1_weights[j] = x * delta_h1[0,j]
 
         print("\n\nNew output weights: "+str(i)+"\n\n")
         print(out_weights)
