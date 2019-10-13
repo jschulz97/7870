@@ -222,6 +222,7 @@ for k in range(epoch):
         for n in range(4): # loop over neurons in this layer
             # back error, so weighted version of the errors on the two neurons "down stream from us"
             delta_2 = (delta_3_1 * n3_w1[n]) + (delta_3_2 * n3_w2[n])
+            print("delta_2_"+str(n), delta_2)
             # this error
             local_nonlin = MyNonLinearity(v2[n],derive=True)
             # remember its error for later
