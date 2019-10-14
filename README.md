@@ -2,4 +2,6 @@
 
 To run:
 
-```python3 nn.py```
+```pip3 install python-mnist```
+
+```python3 mnist.py```
