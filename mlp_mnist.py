@@ -7,25 +7,27 @@ from IPython.display import display
 from IPython.display import clear_output
 import sys
 import random
+from progressbar import progressbar
 
-##
-# our nonlinear Sigmoid function (including its derivative)
+#################
+# sigmoid
 def sigmoid(x, derive=False): 
     if derive: 
         return x * (1.0 - x) 
     return ( 1.0 / (1.0 + np.exp(-x)) )
 
-##
+#################
 # tanh
 def tanh(x, derive=False):
     if derive:
         return np.power(1/np.cosh(x),2)
     return np.tanh(x)
 
-###
+
+##########################################################
 # MLP_MNIST class will hold all mlp nn data and methods
 class MLP_MNIST:
-    def __init__(self,train_dim=2000, test_dim=2000, activation=tanh):
+    def __init__(self,train_dim=5000, test_dim=5000, activation=tanh):
         ## data set
         self.actfx        = activation
         self.train_dim    = train_dim
@@ -57,76 +59,92 @@ class MLP_MNIST:
             tl[i][int(l)] = 1
         self.test_labels = tl
 
-    def train()
 
+    #####################################
+    # Training! Can alter training dims 
+    def train(self,train_dim=0, eta=.0001, epoch=1, mini_batch_size=1):
+        self.eta   = eta    # learning rate
+        self.epoch = epoch
+        v1         = np.ones((1,101))
+        o          = np.ones((1,10))
 
-# weights with random numbers
-h1_weights  = np.random.uniform(low=.1, high=1.0, size=(100,197))
-out_weights = np.random.uniform(low=.1, high=1.0, size=(10,101))
+        # weights with random numbers
+        self.h1_weights  = np.random.uniform(low=.1, high=1.0, size=(100,197))
+        self.out_weights = np.random.uniform(low=.1, high=1.0, size=(10,101))
 
-do_plot     = True
-eta         = .0001    # learning rate
-max_epoch   = 1     # how many epochs? (each epoch will run through all 4 data points)
-err         = np.zeros((max_epoch,1))   # lets record error to plot (get a convergence plot)
-v1          = np.ones((1,101))
-o           = np.ones((1,10))
+        #Find train_dim
+        if(train_dim == 0):
+            train_dim = self.train_dim
+        elif(train_dim > self.train_dim):
+            print("\n\nWarning! Number of training images ("+str(train_dim)+") too large. Increase train_dim parameter (currently "+str(self.train_dim)+") on object initialization.")
+            train_dim = self.train_dim
+        print("\nTraining on",train_dim,"images...")
 
-# init error
-err = np.zeros((max_epoch,len(train_data)))    
+        self.err = np.zeros((self.epoch,int(train_dim/mini_batch_size)))  # init error 
 
-###############################################
-# Training
-###############################################
-for k in range(max_epoch): 
-       
-    for i,x in enumerate(train_data):
-        ## forward pass
+        ## Epochs
+        for k in range(self.epoch): 
+            #rand index list
+            ind = []
+            print('\nTraining Epoch #'+str(k)+'\n')
 
-        #(1,100)           (1,4)      (4,3)    
-        for j in range(100):
-            # layer 1 -- v1 is (1,4), x is (1,4), h1_w[j] is (1,4) 
-            v1[0][j] = np.dot(np.append(x,1), np.transpose(h1_weights[j]))
-            v1[0][j] = self.actfx(v1[0][j])
+            ## Input Data
+            for l in progressbar(range(int(train_dim/mini_batch_size))):
+                delta_ow = np.zeros((mini_batch_size,10))
+                delta_h1 = np.zeros((mini_batch_size,100))
 
-        #(1,10)          (1,5)      (5,2)    
-        for j in range(10):
-            # output layer -- o is (1,2), v2 is (1,5), out_w[j] is (1,5)
-            o[0][j] = np.dot(v1, np.transpose(out_weights[j]))
-            o[0][j] = o[0][j]
-        
+                ## Mini-Batch (defaults to 1 = no mini-batching)
+                for b in range(mini_batch_size):
+                    # Get random index
+                    i = np.random.randint(low=0, high=self.train_dim, )
+                    while(i in ind):
+                        i = np.random.randint(low=0, high=self.train_dim, )
+                    ind.append(i)
 
-        ## error
-        # y is (8,2), o is (2,1)
-        err[k][i] = np.sum(((1.0/2.0) * np.power((o.T - train_labels[i]), 2.0)))
+                    x = self.train_data[i]
 
+                    ## Forward pass
+                    #   (1,100)          (1,197)          (197,1)    
+                    for j in range(100): 
+                        v1[0][j] = np.dot(np.append(x,1), np.transpose(self.h1_weights[j]))
+                        v1[0][j] = self.actfx(v1[0][j])
 
-        ## backprop
-        # Output layer
-        #(10,1)                  (10,1)             (10,1) 
-        delta_ow     = (-1.0) * (np.array(train_labels[i]) - np.reshape(o,((10,))))
-         
-        # Layer 1
-        #(3,1)           (1,10)(w/o bias update) (10,100)           (1,100)
-        delta_h1     = (np.dot(delta_ow.T, out_weights[:,:100]) * self.actfx(v1[:,:100],derive=True)).T
+                    #   (1,10)          (1,101)  (101,1)    
+                    for j in range(10):
+                        o[0][j] = np.dot(v1,     np.transpose(self.out_weights[j]))
+                        o[0][j] = o[0][j]
+                    
+                    ## Error
+                    self.err[k][l] = np.sum(((1.0/2.0) * np.power((o.T - self.train_labels[i]), 2.0)))
 
+                    ## Backprop
+                    # Output layer
+                    #(1,10)                  (10,1)                                       (10,1) 
+                    delta_ow[b]    = np.reshape((-1.0) * (np.array(self.train_labels[i]) - np.reshape(o,((10,)))), (10,1) ).T
+                    
+                    # Layer 1
+                    #(1,100)        (1,10)             (10,100)                         (1,100)
+                    delta_h1[b]    = np.dot(delta_ow[b], self.out_weights[:,:100]) * self.actfx(v1[:,:100],derive=True)
 
-        ## update rule
-        # Output layer 
-        for j in range(10):
-            out_weights[j] -= eta * v1.ravel() * delta_ow[j]
-        
-        # Hidden layer 1
-        for j in range(100):
-            h1_weights[j] -= eta * np.append(x,1) * delta_h1[j]
-    
+                ## Aggregate batch results
+                delta_ow_batch = np.array([np.sum(delta_ow[:,col]) for col in range(10)])
+                delta_h1_batch = np.array([np.sum(delta_h1[:,col]) for col in range(100)])
 
-        print("\n\nHidden Layer 1 Weights: "+str(i)+"\n\n",h1_weights)
+                ## update rule
+                # Output layer 
+                for j in range(10):
+                    self.out_weights[j] -= self.eta * v1.ravel() * delta_ow_batch[j]
+                
+                # Hidden layer 1
+                for j in range(100):
+                    self.h1_weights[j] -= self.eta * np.append(x,1) * delta_h1_batch[j]
+            
 
-        print("\n\nOutput Weights:\n\n",out_weights)
-
-# plot it
-if(do_plot):   
-    plt.plot(err.ravel())
-    plt.ylabel('error')
-    plt.xlabel('epochs')
-    plt.show()
+    #############################
+    # Plot error over updates
+    def plot_error(self,):  
+        plt.plot(self.err.ravel())
+        plt.ylabel('error')
+        plt.xlabel('updates')
+        print("\nDisplaying error plot...\n")
+        plt.show()
