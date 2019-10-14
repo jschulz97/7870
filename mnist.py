@@ -67,7 +67,7 @@ h1_weights  = np.random.uniform(low=.1, high=1.0, size=(100,197))
 out_weights = np.random.uniform(low=.1, high=1.0, size=(10,101))
 
 do_plot     = True
-eta         = .01    # learning rate
+eta         = .0001    # learning rate
 max_epoch   = 1     # how many epochs? (each epoch will run through all 4 data points)
 err         = np.zeros((max_epoch,1))   # lets record error to plot (get a convergence plot)
 v1          = np.ones((1,101))
@@ -80,8 +80,7 @@ err = np.zeros((max_epoch,len(train_data)))
 # Training
 ###############################################
 for k in range(max_epoch): 
-    
-    
+       
 
     for i,x in enumerate(train_data):
         ## forward pass
