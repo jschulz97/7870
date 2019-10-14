@@ -81,7 +81,6 @@ err = np.zeros((max_epoch,len(train_data)))
 ###############################################
 for k in range(max_epoch): 
        
-
     for i,x in enumerate(train_data):
         ## forward pass
 
