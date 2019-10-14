@@ -113,15 +113,11 @@ for k in range(max_epoch):
             o[0][j] = o[0][j]
         #o is (1,2)
         
-        # error
+
+        ## error
         # y is (8,2), o is (2,1)
         err[k] += np.sum(((1.0/2.0) * np.power((o.T - y[i]), 2.0)))
 
-        print("\n\nActivations: "+str(i)+"\n\n")
-        print(v1)
-        print(v2)
-        print(o)
-        print("\n--------------------------\n")
 
         ## backprop
         # Output layer
@@ -131,30 +127,12 @@ for k in range(max_epoch):
         # Layer 2
         #(4,1)                (1,2)           (2,4)             (1,4)
         delta_h2     = (np.dot(delta_ow, out_weights[:,:4]) * tanh(v2[:,:4],derive=True)).T
-
-        # delta_h2 = np.ones((4, 1)) # so ( (weight index), (neuron index) )
-        # for n in range(4): # loop over neurons in this layer
-        #     # back error, so weighted version of the errors on the two neurons "down stream from us"
-        #     delta_2 = (delta_ow[0] * out_weights[0][n]) + (delta_ow[1] * out_weights[1][n])
-        #     print("delta_2_"+str(n), delta_2)
-        #     delta_h2[n] = delta_2 * tanh(v2[0][n],derive=True)
-
          
         # Layer 1
         #(3,1)           (1,4)(w/o bias update) (4,3)           (1,3)
         delta_h1     = (np.dot(delta_h2.T, h2_weights[:,:3]) * tanh(v1[:,:3],derive=True)).T
 
-        # delta_h1 = np.ones((3,1)) # local errors, which we will need to remember/store!
-        # for n in range(3): # loop over neurons in this layer
-        #     # back error, now its 4 error terms
-        #     delta_1 = (delta_h2[0]*h2_weights[0][n]) + (delta_h2[1]*h2_weights[1][n]) + (delta_h2[2]*h2_weights[2][n]) + (delta_h2[3]*h2_weights[3][n])
-        #     delta_h1[n] = delta_1 * tanh(v1[0][n],derive=True)
 
-        print("\n\noutput deltas: "+str(i)+"\n\n")
-        print(delta_ow)
-        print(delta_h2)
-        print(delta_h1)        
-        print("\n--------------------------\n")
         ## update rule
         # Output layer 
         for j in range(2):
