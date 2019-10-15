@@ -6,20 +6,20 @@ Install python packages:
 
     pip3 install progressbar2
 
-# To get MNIST Data
+# Get MNIST Data
 
 Once inside project folder, cd into the "data" directory:
 
-```cd data/```
+    cd data/
 
 Then download the data sets that this code is designed to use:
 
-```wget https://jschulz.dev/mnist_train.csv```
+    wget https://jschulz.dev/mnist_train.csv
 
-```wget https://jschulz.dev/mnist_test.csv``` 
+    wget https://jschulz.dev/mnist_test.csv
 
-# Running
+# Run
 
 To run:
 
-```python3 run_mlp_mnist.py```
+    python3 run_mlp_mnist.py
