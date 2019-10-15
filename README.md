@@ -10,16 +10,16 @@ Install python packages:
 
 Once inside project folder, cd into the "data" directory:
 
-    ```cd data/```
+```cd data/```
 
 Then download the data sets that this code is designed to use:
 
-    ```wget https://jschulz.dev/mnist_train.csv```
+```wget https://jschulz.dev/mnist_train.csv```
 
-    ```wget https://jschulz.dev/mnist_test.csv``` 
+```wget https://jschulz.dev/mnist_test.csv``` 
 
 # Running
 
 To run:
 
-    ```python3 run_mlp_mnist.py```
+```python3 run_mlp_mnist.py```
