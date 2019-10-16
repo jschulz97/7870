@@ -2,9 +2,6 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-import ipywidgets as widgets
-from IPython.display import display
-from IPython.display import clear_output
 import sys
 import random
 from progressbar import progressbar

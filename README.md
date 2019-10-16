@@ -2,7 +2,7 @@
 
 Install python packages:
 
-    pip3 install python-mnist
+    pip3 install python-mnist????
 
     pip3 install progressbar2
 
