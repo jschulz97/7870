@@ -1,12 +1,10 @@
 from mlp_mnist import MLP_MNIST
 
-mlp = None
+# def __init__(self,train_dim=5000, test_dim=5000, activation=tanh):
+# def train(self,train_dim=0, eta=.0001, epoch=1, mini_batch_size=1):
+# def test(self, test_dim=0, rand=True, ):
 
-# mlp = MLP_MNIST(2000,2000,)
-# #train(self, train_dim=0, eta=.0001, epoch=1, ):
-# mlp.train(eta=.00001, mini_batch_size=30)
-# mlp.test(100)
-#mlp.classify()
+mlp = None
 
 while(True):
     ## Training
@@ -24,17 +22,11 @@ while(True):
         break
 
     elif(inp == 1):
-        #def __init__(self,train_dim=5000, test_dim=5000, activation=tanh):
         mlp = MLP_MNIST(2000,2000,)
-
-        #train(self, train_dim=0, eta=.0001, epoch=1, ):
-        mlp.train(eta=.000001,epoch=10)
+        mlp.train(eta=.0001,epoch=50)
 
     elif(inp == 2):
-        #def __init__(self,train_dim=5000, test_dim=5000, activation=tanh):
         mlp = MLP_MNIST(2000,2000,)
-
-        #train(self, train_dim=0, eta=.0001, epoch=1, ):
         mlp.train(eta=.00001, mini_batch_size=30)
 
     elif(inp == 3):

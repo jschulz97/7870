@@ -8,7 +8,10 @@ from IPython.display import clear_output
 import sys
 import random
 from progressbar import progressbar
+import os
 
+#Init random seed
+random.seed(0)
 
 #################
 # sigmoid
@@ -28,7 +31,7 @@ def tanh(x, derive=False):
 ##########################################################
 # MLP_MNIST class will hold all mlp nn data and methods
 class MLP_MNIST:
-    def __init__(self,train_dim=5000, test_dim=5000, activation=tanh):
+    def __init__(self,train_dim=5000, test_dim=5000, activation=tanh, exp_desc=''):
         ## data set
         self.actfx        = activation
         self.train_dim    = train_dim
@@ -63,18 +66,29 @@ class MLP_MNIST:
         self.did_i_train = False
         self.did_i_test  = False
 
+        #create dir for saving pics
+        #self.cwd = '/home/jschulz7/shared/'+exp_desc
+        self.cwd = './'+exp_desc
+        try:
+            os.mkdir(self.cwd)
+        except:
+            print('Directory',self.cwd,'exists.')
+
 
     #####################################
     # Training! Can alter training dims 
-    def train(self,train_dim=0, eta=.0001, epoch=1, mini_batch_size=1):
+    def train(self,train_dim=0, eta=.0001, epoch=1, mini_batch_size=1, weight_init_sd=.1, desc='', ):
         self.eta   = eta    # learning rate
         self.epoch = epoch
+        self.desc  = desc
         v1         = np.ones((1,101))
         o          = np.ones((1,10))
 
         # weights with random numbers
-        self.h1_weights  = np.random.uniform(low=.1, high=2.0, size=(100,197))
-        self.out_weights = np.random.uniform(low=.1, high=2.0, size=(10,101))
+        self.h1_weights  = np.random.normal(0, weight_init_sd, size=(100,197))
+        self.out_weights = np.random.normal(0, weight_init_sd, size=(10,101))
+        self.h1_delta_full = np.array([])
+        self.ow_delta_full = np.array([])
 
         #Find train_dim
         if(train_dim == 0):
@@ -84,7 +98,8 @@ class MLP_MNIST:
             train_dim = self.train_dim
         print("\nTraining on",train_dim,"images.")
 
-        self.err = np.zeros((self.epoch,int(train_dim/mini_batch_size)))  # init error 
+        #self.err = np.zeros((self.epoch,int(train_dim/mini_batch_size)))  # init error 
+        self.err = []
 
         ## Epochs
         for k in range(self.epoch): 
@@ -92,8 +107,16 @@ class MLP_MNIST:
             ind = []
             print('\nTraining Epoch #'+str(k)+'...')
 
+            #Handle mini-batching or not
+            #If mini-batching, outside for loop should only run once
+            li = 0
+            if(mini_batch_size != 1):
+                li = 1
+            else:
+                li = train_dim
+
             ## Input Data
-            for l in progressbar(range(int(train_dim/mini_batch_size))):
+            for l in progressbar(range(li)):
                 delta_ow = np.zeros((mini_batch_size,10))
                 delta_h1 = np.zeros((mini_batch_size,100))
 
@@ -119,7 +142,8 @@ class MLP_MNIST:
                         o[0][j] = o[0][j]
                     
                     ## Error
-                    self.err[k][l] = np.sum(((1.0/2.0) * np.power((o.T - self.train_labels[i]), 2.0)))
+                    #self.err[k][l] = np.sum(((1.0/2.0) * np.power((o.T - self.train_labels[i]), 2.0)))
+                    self.err.append(np.sum((1.0/2.0) * np.power((o.T - self.train_labels[i]), 2.0)))
 
                     ## Backprop
                     # Output layer
@@ -131,17 +155,23 @@ class MLP_MNIST:
                     delta_h1[b]    = np.dot(delta_ow[b], self.out_weights[:,:100]) * self.actfx(v1[:,:100],derive=True)
 
                 ## Aggregate batch results
-                delta_ow_batch = np.array([np.sum(delta_ow[:,col]) for col in range(10)])
-                delta_h1_batch = np.array([np.sum(delta_h1[:,col]) for col in range(100)])
+                delta_ow_batch = np.array([np.sum(delta_ow[:,col]) for col in range(10)]) / mini_batch_size
+                delta_h1_batch = np.array([np.sum(delta_h1[:,col]) for col in range(100)]) / mini_batch_size
+
+                self.h1_delta_full = np.append(self.h1_delta_full, delta_h1_batch)
+                self.ow_delta_full = np.append(self.ow_delta_full, delta_ow_batch)
+
+                #shrink eta through the epochs
+                new_eta = self.eta / np.power(10, int(k/10))
 
                 ## update rule
                 # Output layer 
                 for j in range(10):
-                    self.out_weights[j] -= self.eta * v1.ravel() * delta_ow_batch[j]
+                    self.out_weights[j] -= new_eta * v1.ravel() * delta_ow_batch[j]
                 
                 # Hidden layer 1
                 for j in range(100):
-                    self.h1_weights[j] -= self.eta * np.append(x,1) * delta_h1_batch[j]
+                    self.h1_weights[j] -= new_eta * np.append(x,1) * delta_h1_batch[j]
 
         self.did_i_train = True
 
@@ -170,14 +200,14 @@ class MLP_MNIST:
             # Can decide with 'rand' parameter to test in order
             if(rand):
                 # Get random index
-                i = np.random.randint(low=0, high=self.train_dim, )
+                i = np.random.randint(low=0, high=self.test_dim, )
                 while(i in ind):
-                    i = np.random.randint(low=0, high=self.train_dim, )
+                    i = np.random.randint(low=0, high=self.test_dim, )
                 ind.append(i)
             else:
                 i = l
 
-            x = self.train_data[i]
+            x = self.test_data[i]
 
             ## Forward pass
             #   (1,100)          (1,197)          (197,1)    
@@ -215,31 +245,60 @@ class MLP_MNIST:
 
     #############################
     # Plot error over updates
-    def plot_error(self,):  
+    def plot_error(self, show=True):  
         if(self.did_i_train):
-            plt.plot(self.err.ravel())
+            fig = plt.figure(figsize=(11,9))
+            plt.plot(self.err)
             plt.ylabel('error')
             plt.xlabel('updates')
             print("\nDisplaying error plot...\n")
-            plt.show()
+            plt.savefig(self.cwd+'/error_plot_'+self.desc+'.jpg')
+            if(show):    
+                plt.show()
+        else:
+            print('\nTrain the network first!\n')
+
+
+    #############################
+    # Plot deltas over updates
+    def plot_deltas(self, show=True):  
+        if(self.did_i_train):
+            fig = plt.figure(figsize=(11,9))
+            plt.plot(self.h1_delta_full.ravel())
+            plt.ylabel('deltas')
+            plt.xlabel('updates')
+            print("\nDisplaying delta plot...\n")
+            plt.savefig(self.cwd+'/deltah1_plot_'+self.desc+'.jpg',bbox_inches='tight')
+            if(show):    
+                plt.show()
+            plt.cla()
+            plt.plot(self.ow_delta_full.ravel())
+            plt.savefig(self.cwd+'/deltaow_plot_'+self.desc+'.jpg',bbox_inches='tight')
+            if(show):
+                plt.show()
         else:
             print('\nTrain the network first!\n')
 
     
     #############################
     # Show confusion matrix
-    def show_cm(self, ):
+    def show_cm(self, show=True):
         if(self.did_i_test):
             cm = np.zeros((10,10))
 
+            good = 0
             for i in range(self.test_dim):
                 ind = int(self.pred_ind[i])
                 tpi = np.argmax(self.test_labels[ind])
                 cm[tpi] += self.pred_res[i]
 
+                #score
+                if(tpi == np.argmax(self.pred_res[i])):
+                    good += 1
+
             mx = np.max(cm)
 
-            fig = plt.figure()
+            fig = plt.figure(figsize=(9,9))
             fig.suptitle('')
 
             ax = fig.add_subplot()
@@ -247,22 +306,36 @@ class MLP_MNIST:
 
             for j in range(10):
                 for k in range(10):
-                    text = ax.text(k,j,cm[j,k],ha="center", va="center", color="w",fontsize=15)
+                    text = ax.text(k,j,cm[j,k],ha="center", va="center", color="w",fontsize=10)
 
             plt.colorbar(im)
-            plt.show()
+            plt.ylabel('Actual')
+            plt.xlabel('Prediction')
+            plt.xticks(np.arange(0, 10, 1))
+            plt.yticks(np.arange(0, 10, 1))
+            ax.set_ylim(10-0.5, -0.5)
+            print("\nDisplaying confusion matrix...\n")
+            plt.savefig(self.cwd+'/cm_mat_'+self.desc+'.jpg')
+            if(show):    
+                plt.show()
+            
+            return (good/self.test_dim)
         else:
             print('\nTest on the network first!')
+            return 0
 
     
     #############################
     # Show an image of one neuron's learned weights
-    def show_weights(self, i=0):
+    def show_weights(self, i=0, show=True):
         if(self.did_i_train):
+            fig = plt.figure(figsize=(9,9))
             weights = self.h1_weights[i][:-1]
             weights = np.reshape(weights,(14,14))
             print("\nDisplaying learned weights...\n")
             plt.imshow(weights)
-            plt.show()
+            plt.savefig(self.cwd+'/weights_img_'+self.desc+'.jpg')
+            if(show):
+                plt.show()
         else:
             print('\nTrain the network first!\n')
