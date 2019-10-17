@@ -74,7 +74,7 @@ class MLP_MNIST:
 
     #####################################
     # Training! Can alter training dims 
-    def train(self,train_dim=0, eta=.0001, epoch=1, mini_batch_size=1, weight_init_sd=.1, desc='', ):
+    def train(self,train_dim=0, eta=.0001, epoch=1, mini_batch_size=1, weight_init_sd=.1, mom=0, desc='', ):
         self.eta   = eta    # learning rate
         self.epoch = epoch
         self.desc  = desc
@@ -97,6 +97,10 @@ class MLP_MNIST:
 
         #self.err = np.zeros((self.epoch,int(train_dim/mini_batch_size)))  # init error 
         self.err = []
+
+        #Init velocity
+        h1_v   = np.zeros((10,))
+        ow_v   = np.zeros((100,))
 
         ## Epochs
         for k in range(self.epoch): 
@@ -164,11 +168,13 @@ class MLP_MNIST:
                 ## update rule
                 # Output layer 
                 for j in range(10):
-                    self.out_weights[j] -= new_eta * v1.ravel() * delta_ow_batch[j]
+                    h1_v[j]              = (mom * h1_v[j]) - (new_eta * delta_ow_batch[j])
+                    self.out_weights[j] += h1_v[j] * v1.ravel()
                 
                 # Hidden layer 1
                 for j in range(100):
-                    self.h1_weights[j] -= new_eta * np.append(x,1) * delta_h1_batch[j]
+                    ow_v[j]              = (mom * ow_v[j]) - (new_eta * delta_h1_batch[j])
+                    self.h1_weights[j]  += ow_v[j] * np.append(x,1)
 
         self.did_i_train = True
 
@@ -252,6 +258,7 @@ class MLP_MNIST:
             plt.savefig(self.cwd+'/error_plot_'+self.desc+'.jpg')
             if(show):    
                 plt.show()
+            plt.close()
         else:
             print('\nTrain the network first!\n')
 
@@ -264,15 +271,20 @@ class MLP_MNIST:
             plt.plot(self.h1_delta_full.ravel())
             plt.ylabel('deltas')
             plt.xlabel('updates')
-            print("\nDisplaying delta plot...\n")
+            print("\nDisplaying delta_h1 plot...\n")
             plt.savefig(self.cwd+'/deltah1_plot_'+self.desc+'.jpg',bbox_inches='tight')
             if(show):    
                 plt.show()
-            plt.cla()
+            plt.close()
+            fig = plt.figure(figsize=(11,9))
             plt.plot(self.ow_delta_full.ravel())
+            plt.ylabel('deltas')
+            plt.xlabel('updates')
+            print("\nDisplaying delta_ow plot...\n")
             plt.savefig(self.cwd+'/deltaow_plot_'+self.desc+'.jpg',bbox_inches='tight')
             if(show):
                 plt.show()
+            plt.close()
         else:
             print('\nTrain the network first!\n')
 
@@ -315,6 +327,7 @@ class MLP_MNIST:
             plt.savefig(self.cwd+'/cm_mat_'+self.desc+'.jpg')
             if(show):    
                 plt.show()
+            plt.close()
             
             return (good/self.test_dim)
         else:
@@ -334,5 +347,6 @@ class MLP_MNIST:
             plt.savefig(self.cwd+'/weights_img_'+self.desc+'.jpg')
             if(show):
                 plt.show()
+            plt.close()
         else:
             print('\nTrain the network first!\n')
