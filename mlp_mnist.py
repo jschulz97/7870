@@ -40,7 +40,6 @@ class MLP_MNIST:
         self.train_data   = self.train_data[:,1:]
         self.train_data   = np.reshape(self.train_data,(self.train_dim,28,28))
         self.train_data   = self.train_data[:,::2,::2] / 255.0
-        #train_data   = train_data[:,::2,::2] * (.99 / 255.0) + .01 ??
         self.train_data   = np.reshape(self.train_data,(self.train_dim,196))
 
         self.test_labels  = self.test_data[:,0]
@@ -64,8 +63,7 @@ class MLP_MNIST:
         self.did_i_test  = False
 
         #create dir for saving pics
-        #self.cwd = '/home/jschulz7/shared/'+exp_desc
-        self.cwd = './'+exp_desc
+        self.cwd = '/home/jschulz7/shared/'+exp_desc
         try:
             os.mkdir(self.cwd)
         except:
@@ -74,7 +72,7 @@ class MLP_MNIST:
 
     #####################################
     # Training! Can alter training dims 
-    def train(self,train_dim=0, eta=.0001, epoch=1, mini_batch_size=1, weight_init_sd=.1, mom=0, desc='', ):
+    def train(self,train_dim=0, eta=.001, epoch=1, mini_batch_size=1, weight_init_sd=.01, mom=0, desc='', ):
         self.eta   = eta    # learning rate
         self.epoch = epoch
         self.desc  = desc
@@ -95,8 +93,9 @@ class MLP_MNIST:
             train_dim = self.train_dim
         print("\nTraining on",train_dim,"images.")
 
-        #self.err = np.zeros((self.epoch,int(train_dim/mini_batch_size)))  # init error 
-        self.err = []
+        err_batch = []
+        self.err_exp = []
+        err_delta = []
 
         #Init velocity
         h1_v   = np.zeros((10,))
@@ -108,16 +107,8 @@ class MLP_MNIST:
             ind = []
             print('\nTraining Epoch #'+str(k)+'...')
 
-            #Handle mini-batching or not
-            #If mini-batching, outside for loop should only run once
-            li = 0
-            if(mini_batch_size != 1):
-                li = 1
-            else:
-                li = train_dim
-
             ## Input Data
-            for l in progressbar(range(li)):
+            for l in progressbar(range(int(train_dim/mini_batch_size))):
                 delta_ow = np.zeros((mini_batch_size,10))
                 delta_h1 = np.zeros((mini_batch_size,100))
 
@@ -143,8 +134,7 @@ class MLP_MNIST:
                         o[0][j] = o[0][j]
                     
                     ## Error
-                    #self.err[k][l] = np.sum(((1.0/2.0) * np.power((o.T - self.train_labels[i]), 2.0)))
-                    self.err.append(np.sum((1.0/2.0) * np.power((o.T - self.train_labels[i]), 2.0)))
+                    err_batch.append(np.sum((1.0/2.0) * np.power((o.T - self.train_labels[i]), 2.0)))                    
 
                     ## Backprop
                     # Output layer
@@ -162,20 +152,42 @@ class MLP_MNIST:
                 self.h1_delta_full = np.append(self.h1_delta_full, delta_h1_batch)
                 self.ow_delta_full = np.append(self.ow_delta_full, delta_ow_batch)
 
-                #shrink eta through the epochs
-                new_eta = self.eta / np.power(10, int(k/10))
+                self.err_exp.append(np.sum(np.array(err_batch))/mini_batch_size)
+                err_batch = []
+
+                ##shrink eta through the epochs with stats
+                # if(len(self.err_exp) > 1):
+                #     err_delta.append(abs(self.err_exp[-1] - self.err_exp[-2]))
+                # print(' #:',l,'err:',self.err_exp[-1])
+                # if(l%100 == 0):
+                #     input()
+                #
+                #new_eta = self.eta / np.power(10, int(k/10))
+                # last_n = 10
+                # if(len(err_delta) > last_n):
+                #     u = np.mean(np.array(err_delta[-last_n:]))
+                #     s = np.std(np.array(err_delta[-last_n:]))
+                #     #print('u:',u,'s:',s)
+                #     avg10 = np.mean(np.array(err_delta[-3:]))
+                #     if(avg10 < (u-1.5*s) or avg10 > (u+1.5*s)):
+                #         self.eta = self.eta/10
+                #         print('Reduced eta to',self.eta)
+                #         self.err_delta = []
 
                 ## update rule
                 # Output layer 
                 for j in range(10):
-                    h1_v[j]              = (mom * h1_v[j]) - (new_eta * delta_ow_batch[j])
+                    h1_v[j]              = (mom * h1_v[j]) - (self.eta * delta_ow_batch[j])
                     self.out_weights[j] += h1_v[j] * v1.ravel()
                 
                 # Hidden layer 1
                 for j in range(100):
-                    ow_v[j]              = (mom * ow_v[j]) - (new_eta * delta_h1_batch[j])
+                    ow_v[j]              = (mom * ow_v[j]) - (self.eta * delta_h1_batch[j])
                     self.h1_weights[j]  += ow_v[j] * np.append(x,1)
+            if(k!=0 and k%5 == 0):
+                self.eta = self.eta / 1.5
 
+        print('Final eta:',self.eta)
         self.did_i_train = True
 
 
@@ -240,18 +252,13 @@ class MLP_MNIST:
             self.pred_res[i]      = np.zeros((10,))
             self.pred_res[i][mxi] = 1
 
-        # for i,x in enumerate(self.pred_res[:10]):
-        #     ind = int(self.pred_ind[i])
-        #     print(self.test_labels[ind])
-        # print(self.pred_res[:10])
-
 
     #############################
     # Plot error over updates
     def plot_error(self, show=True):  
         if(self.did_i_train):
             fig = plt.figure(figsize=(11,9))
-            plt.plot(self.err)
+            plt.plot(self.err_exp)
             plt.ylabel('error')
             plt.xlabel('updates')
             print("\nDisplaying error plot...\n")

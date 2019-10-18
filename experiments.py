@@ -2,8 +2,7 @@ from mlp_mnist import MLP_MNIST
 import csv
 from multiprocessing import *
 
-#max_proc_sem = Semaphore(4)
-max_proc_sem = Semaphore(20)
+max_proc_sem = Semaphore(4)
 csv_sem      = Semaphore(1)
 
 def do_mlp(mlp,t,e,p,b,w,d,m):
@@ -11,6 +10,7 @@ def do_mlp(mlp,t,e,p,b,w,d,m):
     mlp.test(1000)
     mlp.plot_error(show=False)
     score = mlp.show_cm(show=False)
+    print('Network score:', score)
     mlp.plot_deltas(show=False)
     line = [score,d]
     csv_sem.acquire()
@@ -30,10 +30,8 @@ def do_mlp(mlp,t,e,p,b,w,d,m):
 
 exps = [2]
 
-#dire = '/home/jschulz7/shared/'
-dire = './'
-
-
+dire = '/home/jschulz7/shared/'
+#dire = './'
 
 for i in exps:
     if(i == 1):
@@ -56,6 +54,7 @@ for i in exps:
                             mlp.test(1000)
                             mlp.plot_error(show=False)
                             score = mlp.show_cm(show=False)
+                            print('Network score:', score)
                             mlp.plot_deltas(show=False)
 
                             line = [score,d]
@@ -64,15 +63,15 @@ for i in exps:
                                 spamwriter.writerow(line)
     
     elif(i == 2):
-        exp_desc = 'big_exp'
+        exp_desc = 'batch_exp'
         mlp = MLP_MNIST(10000,1000,exp_desc=exp_desc,)
 
-        tn      = [5000,10000]
-        weight  = [.1,.01,.001,.0001]
-        epochs  = [1,50,500]
-        batches = [1,500,1000]
-        eta     = [.01, .001, .0001, .00001]
-        mom     = [0,.5]
+        tn      = [5000]
+        weight  = [.01]
+        epochs  = [20]
+        batches = [1,10]
+        eta     = [.01,]
+        mom     = [0]
 
         #p = [] * (len(tn) * len(weight) * len(epochs) * len(batches) * len(eta) * len(mom))
         proc = []
@@ -88,6 +87,7 @@ for i in exps:
                                 d = 'tn='+str(t)+'_wsd='+str(w)+'_ep='+str(p)+'_mb='+str(b)+'_eta='+str(e)+'_m='+str(m)
                                 proc.append(Process(target=do_mlp, args=(mlp,t,e,p,b,w,d,m)))
                                 proc[-1].start()
+                                #do_mlp(mlp,t,e,p,b,w,d,m)
                                 
                                 
         for i in proc:
@@ -102,6 +102,5 @@ for i in exps:
         mlp.test(1000)
         mlp.plot_error()
         mlp.show_cm()
-
 
 

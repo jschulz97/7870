@@ -11,9 +11,9 @@ while(True):
     print('\n\nWelcome to the MLP_MNIST Companion App!')
     print('-- TRAINING MENU --')
     print('\nSelect an experiment to run from the following:')
-    print('1. Default MLP')
-    print('2. Mini-Batch')
-    print('3. Momentum')
+    print('1. 2k Images, 20 Epochs, Mini-batches of 10 @ .01 Learning Rate')
+    print('2. 2k Images, 5 Epochs, .01 Learning Rate')
+    print('3. 2k Images, 20 Epochs, Mini-batches of 10 w/ Momentum of 0.25')
     print('0. Exit')
     print('>',end='')
     inp = int(float(input()))
@@ -22,15 +22,40 @@ while(True):
         break
 
     elif(inp == 1):
-        mlp = MLP_MNIST(2000,2000,)
-        mlp.train(eta=.0001,epoch=50)
+        exp_desc='mini_batch'
+        t = 2000
+        w = .01
+        p = 20
+        b = 10
+        e = .01
+        m = 0
+        mlp = MLP_MNIST(t,5000,exp_desc=exp_desc)
+        d = 'tn='+str(t)+'_wsd='+str(w)+'_ep='+str(p)+'_mb='+str(b)+'_eta='+str(e)+'_m='+str(m)
+        mlp.train(train_dim=t,eta=e,epoch=p,mini_batch_size=b, weight_init_sd=w, mom=m,desc=d)
 
     elif(inp == 2):
-        mlp = MLP_MNIST(2000,2000,)
-        mlp.train(eta=.00001, mini_batch_size=30)
+        exp_desc='no_batch'
+        t = 2000
+        w = .01
+        p = 5
+        b = 1
+        e = .01
+        m = 0
+        mlp = MLP_MNIST(t,5000,exp_desc=exp_desc)
+        d = 'tn='+str(t)+'_wsd='+str(w)+'_ep='+str(p)+'_mb='+str(b)+'_eta='+str(e)+'_m='+str(m)
+        mlp.train(train_dim=t,eta=e,epoch=p,mini_batch_size=b, weight_init_sd=w, mom=m,desc=d)
 
     elif(inp == 3):
-        print('Momentum')
+        exp_desc='momentum'
+        t = 2000
+        w = .01
+        p = 20
+        b = 10
+        e = .01
+        m = .25
+        mlp = MLP_MNIST(t,5000,exp_desc=exp_desc)
+        d = 'tn='+str(t)+'_wsd='+str(w)+'_ep='+str(p)+'_mb='+str(b)+'_eta='+str(e)+'_m='+str(m)
+        mlp.train(train_dim=t,eta=e,epoch=p,mini_batch_size=b, weight_init_sd=w,mom=m, desc=d)
 
     ## Testing
     print('\n\n-- TESTING MENU --\n\nHow many images should I test on?')
