@@ -1,20 +1,39 @@
 import numpy as numpy
 from matplotlib import pyplot as plt
+from mem_fxs import *
 
-class Fuzzy:
-    def __init__(self,):
+X = {1: 1.0, 2: .8, 3: 0.0, 4: 0.0}
+Y = {'a': 0.0, 'b': .5, 'c': 1.0, 'd': .5, 'e': 0.0}
+
+class Rule:
+    def __init__(self, A, P, C, ):
+        self.A = A
+        self.P = P 
+        self.C = C 
+
+
+class Fuzzy_Model:
+    def __init__(self, ):
         print('init')
+        self.Rules = []
     
-    def rule1(self,x):
-        if(x < .25):
-            return 'low'
-        elif(x >= .25 and x <= .75):
-            return 'medium'
-        elif(x > .75):
-            return 'high'
 
+    def add_rule(self, rule_temp):
+        self.Rules.append(rule_temp)
+
+
+    def df_centroid(self, y, B):
+        sum0 = 0.0
+        sum1 = 0.0
+
+        for yi in y:
+            sum0 += yi * B[yi]
+            sum1 += B[yi]
+
+        return sum0/sum1
 
 
 if(__name__ == '__main__'):
-    fuz = Fuzzy()
-    print(fuz.rule1(.3))
+    fuz = Fuzzy_Model()
+    #fuz.add_rule(Rule())
+    
