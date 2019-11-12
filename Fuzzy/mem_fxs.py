@@ -34,6 +34,12 @@ def zmem(x, a, b):
         return 0
 
 
+def zadeh(a,b):
+    return min(1,(1-a+b))
+
+#def trap_mem()
+
+
 # Perform correlational product
 # Input x,y as dictionaries
 # Output nested dict

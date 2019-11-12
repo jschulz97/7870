@@ -10,3 +10,20 @@ def test_mf():
 
 
 
+def prob_7_3():
+    a_char1 = {1: 1.0, 2: .4, 3: .1}
+    b_char1 = {'a': 0.2, 'b': .8}
+    c_char1 = {'w': 0.0, 'x': .4, 'y': .8, 'z': 1.0}
+
+    fuz = Fuzzy_Model()
+    
+    fuz.add_input('A')
+    fuz.add_fs_in('A','char1',a_char1)
+    fuz.add_input('B')
+    fuz.add_fs_in('B','char1',b_char1)
+
+    fuz.add_output('C')
+    fuz.add_fs_out('C','char1',c_char1)
+
+    r = Rule(['a','char1'],['w','char1'])
+    fuz.add_rule(r)
