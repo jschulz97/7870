@@ -41,6 +41,13 @@ class Fuzzy_Model:
     def add_rule(self, rule_temp):
         self.Rules.append(rule_temp)
 
+    
+    def fire(self, X):
+        for j in range(U.shape[1])    
+            for i in range(U.shape[0]):
+
+
+
     # y is set of outputs
     # B is aggregation of all rule firings
     def df_centroid(self, y, B):
