@@ -1,4 +1,4 @@
-import numpy as numpy
+import numpy as np
 from matplotlib import pyplot as plt
 from mem_fxs import *
 from tests import *
@@ -53,13 +53,20 @@ class Fuzzy_Model:
 
         return sum0/sum1
 
-    def build_zadeh_mat(self,):
+    def build_zadeh_mat(self,inp):
+        # print(self.FS)
+        # print(self.FS['C']['char1'].keys())
+        # print(self.FS['C']['char1'].values())
         arr = np.zeros((3,4))
-        for i,a in enumerate(self.FS['A'].keys()):
-            for j,c in enumerate(self.FS['C'].keys()):
-                arr[i][j] = zadeh(self.FS['A'][a],self.FS['C'][c])
+        for i,a in enumerate(self.FS['A']['char1'].values()):
+            for j,c in enumerate(self.FS['C']['char1'].values()):
+                arr[i][j] = zadeh(a,c)
         
         print(arr)
+
+        res = inp.T.dot(arr)
+        print(res)
+
 
 if(__name__ == '__main__'):
     prob_7_3()

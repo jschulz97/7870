@@ -1,6 +1,7 @@
-import numpy as numpy
+import numpy as np
 from matplotlib import pyplot as plt
 from mem_fxs import *
+from fuzzy import *
 
 def test_mf():
     testx = [0,1,2,3,4,5,6,7,8,9]
@@ -27,3 +28,10 @@ def prob_7_3():
 
     r = Rule(['a','char1'],['w','char1'])
     fuz.add_rule(r)
+
+    print('U is A')
+    fuz.build_zadeh_mat(np.array([1,.4,.1]))
+    print('U is NOT A')
+    fuz.build_zadeh_mat(np.array([.1,.4,1]))
+    print('U is A`')
+    fuz.build_zadeh_mat(np.array([.6,1,0]))
