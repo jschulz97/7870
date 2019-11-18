@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from mem_fxs import *
+from definitions import *
 from tests import *
 
 X = [1,2,3,4]
@@ -10,16 +10,12 @@ A = {1: 1.0, 2: .8, 3: 0.0, 4: 0.0}
 # medium
 B = {'a': 0.0, 'b': .5, 'c': 1.0, 'd': .5, 'e': 0.0}
 
-class Rule:
-    def __init__(self, A, C, ):
-        self.A = A
-        self.C = C 
 
 
 class Fuzzy_Model:
-    def __init__(self,rules=[]):
+    def __init__(self,op='zadeh'):
         print('init')
-        self.Rules = rules
+        self.Rules = []
         self.FS = dict2()
         self.Inputs  = []
         self.Outputs = []
