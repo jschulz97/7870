@@ -1,13 +1,25 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from mem_fxs import *
+from definitions import *
 from fuzzy import *
 
+mfs = [ R_Shaped(2,3),
+        L_Shaped(7,9),
+        Triangle(4,5,7),
+        S_Shaped(6,9),
+        Z_Shaped(1,4),
+        Trapezoid(2,3,7,9),
+        Gaussian(5,.5),
+        ]
+
 def test_mf():
-    testx = [0,1,2,3,4,5,6,7,8,9]
-    testy = [zmem(i,1,8) for i in testx]
-    plt.plot(testx,testy)
-    plt.show()
+    #testx = [0,1,2,3,4,5,6,7,8,9]
+    testx = [i/10 for i in range(0,100)]
+
+    for mf in mfs:
+        y = [mf.compute(x) for x in testx]
+        plt.plot(testx,y)
+        plt.show()    
 
 
 
@@ -35,3 +47,9 @@ def prob_7_3():
     fuz.build_zadeh_mat(np.array([.1,.4,1]))
     print('U is A`')
     fuz.build_zadeh_mat(np.array([.6,1,0]))
+
+
+def tipping_problem_scitkit():
+    fuz  = Fuzzy_Model(Zadeh())
+
+    
