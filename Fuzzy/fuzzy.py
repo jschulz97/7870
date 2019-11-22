@@ -27,7 +27,7 @@ class Fuzzy_Model:
         self.ydim = (domain[0],domain[-1])
         print('Added Consequent:',name)
 
-    def add_fuzzy_value(self, name, val, mfx,):
+    def add_fuzzy_set(self, name, val, mfx,):
         #Assign to correct name
         if(name in self.antecedents):
             self.antecedents[name][val] = dict2()
@@ -99,14 +99,10 @@ class Fuzzy_Model:
                 self.By[i] += y[i]
         
         #Bring back down to 1 if greater
-        self.By = [min(1,y) for y in self.By]
-        
-        #Plot!
-        plt.plot(testx,self.By)
-        plt.ylim(0,1.05)
-        plt.ylabel('membership')
-        plt.xlabel('output')
-        plt.show()      
+        self.By = [min(1,y) for y in self.By]   
+
+    def fuzzy_out(self,):
+        _=0
 
     # Bx is x for output discrete set
     # By is aggregation of all rule firings
@@ -119,3 +115,11 @@ class Fuzzy_Model:
             sum1 += y
 
         return sum0/sum1
+
+    def plot(self,):
+        #Plot!
+        plt.plot(self.Bx,self.By)
+        plt.ylim(0,1.05)
+        plt.ylabel('membership')
+        plt.xlabel('output')
+        plt.show()   

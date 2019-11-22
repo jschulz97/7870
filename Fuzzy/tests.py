@@ -48,6 +48,7 @@ def prob_7_3():
     fuz.build_zadeh_mat(np.array([.6,1,0]))
 
 
+# Sanity Check
 def tipping_problem_scitkit():
     quality_domain = np.arange(0,11,1)
     service_domain = np.arange(0,11,1)
@@ -61,9 +62,9 @@ def tipping_problem_scitkit():
     service_med    = Triangle(0,5,10)
     service_high   = Triangle(5,10,10)
 
-    tip_low    = Triangle(0,0,13)
-    tip_med    = Triangle(0,13,25)
-    tip_high   = Triangle(13,25,25)
+    tip_low        = Triangle(0,0,13)
+    tip_med        = Triangle(0,13,25)
+    tip_high       = Triangle(13,25,25)
 
     fuz  = Fuzzy_Model(Corr_Min())
 
@@ -71,27 +72,23 @@ def tipping_problem_scitkit():
     fuz.add_antecedent('service',service_domain)
     fuz.add_consequent('tip',tip_domain)
 
-    fuz.add_fuzzy_value('quality','poor',quality_low)
-    fuz.add_fuzzy_value('quality','average',quality_med)
-    fuz.add_fuzzy_value('quality','good',quality_high)
+    fuz.add_fuzzy_set('quality','poor',quality_low)
+    fuz.add_fuzzy_set('quality','average',quality_med)
+    fuz.add_fuzzy_set('quality','good',quality_high)
 
-    fuz.add_fuzzy_value('service','poor',service_low)
-    fuz.add_fuzzy_value('service','average',service_med)
-    fuz.add_fuzzy_value('service','good',service_high)
+    fuz.add_fuzzy_set('service','poor',service_low)
+    fuz.add_fuzzy_set('service','average',service_med)
+    fuz.add_fuzzy_set('service','good',service_high)
 
-    fuz.add_fuzzy_value('tip','low',tip_low)
-    fuz.add_fuzzy_value('tip','med',tip_med)
-    fuz.add_fuzzy_value('tip','high',tip_high)
+    fuz.add_fuzzy_set('tip','low',tip_low)
+    fuz.add_fuzzy_set('tip','med',tip_med)
+    fuz.add_fuzzy_set('tip','high',tip_high)
 
-    rule_1 = Rule( [fuz.antecedents['quality']['poor'],
-                    'or',
-                    fuz.antecedents['service']['poor']],
+    rule_1 = Rule( [fuz.antecedents['quality']['poor'], 'or', fuz.antecedents['service']['poor']],
                     fuz.consequents['tip']['low'])
     rule_2 = Rule( [fuz.antecedents['service']['average']],
                     fuz.consequents['tip']['med'])
-    rule_3 = Rule( [fuz.antecedents['service']['good'],
-                    'and',
-                    fuz.antecedents['quality']['good']],
+    rule_3 = Rule( [fuz.antecedents['service']['good'], 'and', fuz.antecedents['quality']['good']],
                     fuz.consequents['tip']['high'])
 
     fuz.add_rule(rule_1)
@@ -103,7 +100,9 @@ def tipping_problem_scitkit():
 
     fuz.fire()
     fuz.aggregate_outputs()
-    print(fuz.df_centroid())
+    print('Fuzzy Answer:',fuz.fuzzy_out())
+    print('Defuzzified Answer:',fuz.df_centroid())
+    fuz.plot()
 
 
 
