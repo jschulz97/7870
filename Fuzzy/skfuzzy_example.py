@@ -78,7 +78,8 @@ To help understand what the membership looks like, use the ``view`` methods.
 """
 
 # You can see how these look with .view()
-#quality['average'].view()
+#quality.view()
+# quality['average'].view()
 """
 .. image:: PLOT2RST.current_figure
 """
@@ -109,9 +110,12 @@ kind of task at which fuzzy logic excels.
 
 rule1 = ctrl.Rule(quality['poor'] | service['poor'], tip['low'])
 rule2 = ctrl.Rule(service['average'], tip['medium'])
-rule3 = ctrl.Rule(service['good'] | quality['good'], tip['high'])
+rule3 = ctrl.Rule(service['good'] & quality['good'], tip['high'])
 
-rule1.view()
+#rule1.view()
+print(type(quality['poor']))
+print(rule1)
+print(rule1.antecedent)
 """
 .. image:: PLOT2RST.current_figure
 
@@ -152,7 +156,7 @@ tipping.compute()
 Once computed, we can view the result as well as visualize it.
 """
 print(tipping.output['tip'])
-tip.view(sim=tipping)
+#tip.view(sim=tipping)
 
 """
 .. image:: PLOT2RST.current_figure
