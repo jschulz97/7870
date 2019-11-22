@@ -22,9 +22,6 @@ def test_mf():
         plt.show()    
 
 
-
-
-
 def prob_7_3():
     a_char1 = {1: 1.0, 2: .4, 3: .1}
     b_char1 = {'a': 0.2, 'b': .8}
@@ -68,7 +65,7 @@ def tipping_problem_scitkit():
     tip_med    = Triangle(0,13,25)
     tip_high   = Triangle(13,25,25)
 
-    fuz  = Fuzzy_Model(Zadeh())
+    fuz  = Fuzzy_Model(Corr_Min())
 
     fuz.add_antecedent('quality',quality_domain)
     fuz.add_antecedent('service',service_domain)

@@ -3,7 +3,6 @@ from matplotlib import pyplot as plt
 from definitions import *
 import math
 
-
 class Fuzzy_Model:
     def __init__(self,op=None):
         self.op = op
@@ -83,23 +82,34 @@ class Fuzzy_Model:
             #do_view(r.C,0,26,.1)
 
     def aggregate_outputs(self,samp_rate=.1):
-        #Aggregate output memberships
+        #Implication/Discretization
         testx = [i*samp_rate for i in range(int(self.ydim[0]/samp_rate),int(self.ydim[1]/samp_rate))]
+        Y = np.zeros((len(self.out_fxs),len(testx)))
+        for i,fx in enumerate(self.out_fxs):
+            y = fx.max
+            fx.max = 1
+            for j,x in enumerate(testx):
+                Y[i,j] = self.op(y,fx.compute(x))
+
+        #Aggregate output memberships
         self.By = np.zeros(len(testx))
         self.Bx = testx
-        for fx in self.out_fxs:    
+        for y in Y:    
             for i,x in enumerate(testx):    
-                self.By[i] += fx.compute(x)
+                self.By[i] += y[i]
         
+        #Bring back down to 1 if greater
+        self.By = [min(1,y) for y in self.By]
+        
+        #Plot!
         plt.plot(testx,self.By)
-        plt.ylim(0,1)
+        plt.ylim(0,1.05)
         plt.ylabel('membership')
         plt.xlabel('output')
         plt.show()      
 
-
-    # y is set of outputs
-    # B is aggregation of all rule firings
+    # Bx is x for output discrete set
+    # By is aggregation of all rule firings
     def df_centroid(self,):
         sum0 = 0.0
         sum1 = 0.0
@@ -109,17 +119,3 @@ class Fuzzy_Model:
             sum1 += y
 
         return sum0/sum1
-
-    # def build_zadeh_mat(self,inp):
-    #     # print(self.FS)
-    #     # print(self.FS['C']['char1'].keys())
-    #     # print(self.FS['C']['char1'].values())
-    #     arr = np.zeros((3,4))
-    #     for i,a in enumerate(self.FS['A']['char1'].values()):
-    #         for j,c in enumerate(self.FS['C']['char1'].values()):
-    #             arr[i][j] = zadeh(a,c)
-        
-    #     print(arr)
-
-    #     res = inp.T.dot(arr)
-    #     print(res)

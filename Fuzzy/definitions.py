@@ -2,18 +2,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 import math
 
-#Improved dictionary auto-adds keys when assigned and doesn't exist
-class dict2(dict):
-    _=0
-    # def __getitem__(self, item):
-    #     try:
-    #         return dict.__getitem__(self, item)
-    #     except KeyError:
-    #         print('dict2 key doesn\'t exist, creating new key:',item)
-    #         value = self[item] = type(self)()
-    #         return value
-
-
 ##############################
 # Rule Class
 class Rule:
@@ -45,7 +33,7 @@ class Operator:
 
 class Zadeh(Operator):
     def __call__(self, a, b,):
-        return min(1, (1- a + b))
+        return min(1, (1 - a + b))
 
 class Corr_Prod(Operator):
     def __call__(self, a, b,):
@@ -54,27 +42,6 @@ class Corr_Prod(Operator):
 class Corr_Min(Operator):
     def __call__(self, a, b,):
         return min(a, b)
-
-# class Operator:
-#     def __init__(self, a, b,):
-#         self.a = a
-#         self.b = b
-
-#     def fire(self,):
-#         print('Base Operator Class is not fireable')
-#         return 0
-
-# class Zadeh(Operator):
-#     def fire(self,):
-#         return min(1, (1- self.a + self.b))
-
-# class Corr_Prod(Operator):
-#     def fire(self,):
-#         return (self.a * self.b)
-
-# class Corr_Min(Operator):
-#     def fire(self,):
-#         return min(self.a, self.b)
 
 
 ##############################
@@ -179,32 +146,20 @@ def do_view(mf, a, b, step):
     testx = [i*step for i in range(int(a/step),int(b/step))]
     y = [mf['mfx'].compute(x) for x in testx]
     plt.plot(testx,y)
-    plt.ylim(0,1)
+    plt.ylim(0,1.05)
     plt.ylabel('membership')
     plt.xlabel(mf['name'])
     plt.show()
 
-# Perform correlational product
-# Input x,y as dictionaries
-# Output nested dict
-# def corr_prod(x, y):
-#     d2 = dict2()
+    
+#Improved dictionary auto-adds keys when assigned and doesn't exist
+class dict2(dict):
+    _=0
+    # def __getitem__(self, item):
+    #     try:
+    #         return dict.__getitem__(self, item)
+    #     except KeyError:
+    #         print('dict2 key doesn\'t exist, creating new key:',item)
+    #         value = self[item] = type(self)()
+    #         return value
 
-#     for i in x.keys():
-#         for j in y.keys():
-#             d2[i][j] =  x[i] * y[j]
-
-#     return d2
-
-
-# # Perform correlational minimum
-# # input x,y as dictionaries
-# # Output nested dict
-# def corr_min(x, y):
-#     d2 = dict2()
-
-#     for i in x.keys():
-#         for j in y.keys():
-#             d2[i][j] =  min(x[i] , y[j])
-
-#     return d2
