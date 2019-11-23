@@ -3,6 +3,8 @@ from matplotlib import pyplot as plt
 from definitions import *
 import math
 
+plt.rcParams.update({'font.size': 18})
+
 class Fuzzy_Model:
     def __init__(self,op=None):
         self.op = op
@@ -81,9 +83,9 @@ class Fuzzy_Model:
             #View output for this rule
             #do_view(r.C,0,26,.1)
 
-    def aggregate_outputs(self,samp_rate=.1):
+    def aggregate_outputs(self, var,):
         #Implication/Discretization
-        testx = [i*samp_rate for i in range(int(self.ydim[0]/samp_rate),int(self.ydim[1]/samp_rate))]
+        testx = self.consequents[var]['domain']
         Y = np.zeros((len(self.out_fxs),len(testx)))
         for i,fx in enumerate(self.out_fxs):
             y = fx.max
@@ -101,8 +103,16 @@ class Fuzzy_Model:
         #Bring back down to 1 if greater
         self.By = [min(1,y) for y in self.By]   
 
-    def fuzzy_out(self,):
-        _=0
+    def fuzzy_out(self, var, y):
+        fuz_mem = 0 
+        fuz_val = ''
+        for val in self.consequents[var]:
+            if(val != 'domain'):
+                obj = self.consequents[var]
+                if(obj[val]['mfx'].compute(y) > fuz_mem):
+                    fuz_val = val
+        
+        return fuz_val
 
     # Bx is x for output discrete set
     # By is aggregation of all rule firings
@@ -116,10 +126,35 @@ class Fuzzy_Model:
 
         return sum0/sum1
 
-    def plot(self,):
+    def view_sets(self, var,):
+        if(var in self.antecedents):
+            obj = self.antecedents
+        elif(var in self.consequents):
+            obj = self.consequents
+        else:
+            print('Unknown Variable:',var)
+            return
+        
+        for st in obj[var]:
+            xaxis = obj[var]['domain']
+            if(st != 'domain'):
+                obj1 = obj[var][st]
+                y = [obj1['mfx'].compute(x) for x in xaxis]
+                plt.plot(xaxis,y)
+        plt.ylim(0,1.05)
+        plt.title(var+' Fuzzy Sets')
+        plt.ylabel('membership')
+        plt.xlabel('difference')
+        plt.show()   
+
+    def plot(self, title, xl, yl):
         #Plot!
+        fig = plt.figure()
+        fig.set_size_inches(8, 7, forward=True)
         plt.plot(self.Bx,self.By)
         plt.ylim(0,1.05)
-        plt.ylabel('membership')
-        plt.xlabel('output')
+        plt.xlim(0,1.0)
+        plt.title(title)
+        plt.ylabel(yl)
+        plt.xlabel(xl)        
         plt.show()   
